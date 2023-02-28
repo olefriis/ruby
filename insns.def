@@ -710,12 +710,9 @@ defined_ivar
 // attr bool leaf  = false;
 {
     val = Qnil;
-    if (rb_ivar_defined(GET_SELF(), id)) {
+    if (vm_getivar(GET_SELF(), id, GET_ISEQ(), ic, NULL, FALSE, Qundef) != Qundef) {
         val = pushval;
     }
-    //if (vm_getinstancevariable(GET_ISEQ(), GET_SELF(), id, ic) != Qnil) {
-    //    val = pushval;
-    //}
 }
 
 /* check `target' matches `pattern'.

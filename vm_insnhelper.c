@@ -1152,9 +1152,9 @@ fill_ivar_cache(const rb_iseq_t *iseq, IVC ic, const struct rb_callcache *cc, in
 
 #define ATTR_INDEX_NOT_SET (attr_index_t)-1
 
-ALWAYS_INLINE(static VALUE vm_getivar(VALUE, ID, const rb_iseq_t *, IVC, const struct rb_callcache *, int));
+ALWAYS_INLINE(static VALUE vm_getivar(VALUE, ID, const rb_iseq_t *, IVC, const struct rb_callcache *, int, int));
 static inline VALUE
-vm_getivar(VALUE obj, ID id, const rb_iseq_t *iseq, IVC ic, const struct rb_callcache *cc, int is_attr)
+vm_getivar(VALUE obj, ID id, const rb_iseq_t *iseq, IVC ic, const struct rb_callcache *cc, int is_attr, int default_value)
 {
 #if OPT_IC_FOR_IVAR
     VALUE val = Qundef;
@@ -1162,7 +1162,7 @@ vm_getivar(VALUE obj, ID id, const rb_iseq_t *iseq, IVC ic, const struct rb_call
     VALUE * ivar_list;
 
     if (SPECIAL_CONST_P(obj)) {
-        return Qnil;
+        return default_value;
     }
 
 #if SHAPE_IN_BASIC_FLAGS
@@ -1209,7 +1209,7 @@ vm_getivar(VALUE obj, ID id, const rb_iseq_t *iseq, IVC ic, const struct rb_call
             ivar_list = ivtbl->ivptr;
         }
         else {
-            return Qnil;
+            return default_value;
         }
     }
 
@@ -1227,7 +1227,7 @@ vm_getivar(VALUE obj, ID id, const rb_iseq_t *iseq, IVC ic, const struct rb_call
         RUBY_ASSERT(cached_id != OBJ_TOO_COMPLEX_SHAPE_ID);
 
         if (index == ATTR_INDEX_NOT_SET) {
-            return Qnil;
+            return default_value;
         }
 
         val = ivar_list[index];
@@ -1269,7 +1269,7 @@ vm_getivar(VALUE obj, ID id, const rb_iseq_t *iseq, IVC ic, const struct rb_call
 
         if (shape_id == OBJ_TOO_COMPLEX_SHAPE_ID) {
             if (!rb_id_table_lookup(ROBJECT_IV_HASH(obj), id, &val)) {
-                val = Qnil;
+                val = default_value;
             }
         }
         else {
@@ -1290,13 +1290,15 @@ vm_getivar(VALUE obj, ID id, const rb_iseq_t *iseq, IVC ic, const struct rb_call
                     vm_ic_attr_index_initialize(ic, shape_id);
                 }
 
-                val = Qnil;
+                val = default_value;
             }
         }
 
     }
 
-    RUBY_ASSERT(!UNDEF_P(val));
+    if (default_value != Qundef) {
+        RUBY_ASSERT(!UNDEF_P(val));
+    }
 
     return val;
 
@@ -1581,7 +1583,7 @@ rb_vm_setclassvariable(const rb_iseq_t *iseq, const rb_control_frame_t *cfp, ID 
 static inline VALUE
 vm_getinstancevariable(const rb_iseq_t *iseq, VALUE obj, ID id, IVC ic)
 {
-    return vm_getivar(obj, id, iseq, ic, NULL, FALSE);
+    return vm_getivar(obj, id, iseq, ic, NULL, FALSE, Qnil);
 }
 
 static inline void
@@ -3415,7 +3417,7 @@ vm_call_ivar(rb_execution_context_t *ec, rb_control_frame_t *cfp, struct rb_call
     const struct rb_callcache *cc = calling->cc;
     RB_DEBUG_COUNTER_INC(ccf_ivar);
     cfp->sp -= 1;
-    VALUE ivar = vm_getivar(calling->recv, vm_cc_cme(cc)->def->body.attr.id, NULL, NULL, cc, TRUE);
+    VALUE ivar = vm_getivar(calling->recv, vm_cc_cme(cc)->def->body.attr.id, NULL, NULL, cc, TRUE, Qnil);
     return ivar;
 }
 
