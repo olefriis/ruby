@@ -704,13 +704,13 @@ defined
 /* defined?(@foo) */
 DEFINE_INSN
 defined_ivar
-(VALUE obj, VALUE pushval)
+(ID id, IVC ic, VALUE pushval)
 ()
 (VALUE val)
 // attr bool leaf  = false;
 {
     val = Qnil;
-    if (vm_defined(ec, GET_CFP(), DEFINED_IVAR, obj, Qnil)) {
+    if (vm_getinstancevariable(GET_ISEQ(), GET_SELF(), id, ic) != Qnil) {
         val = pushval;
     }
 }

@@ -5463,8 +5463,8 @@ defined_expr0(rb_iseq_t *iseq, LINK_ANCHOR *const ret,
 
 #define PUSH_VAL(type) (needstr == Qfalse ? Qtrue : rb_iseq_defined_string(type))
       case NODE_IVAR:
-        ADD_INSN2(ret, line_node, defined_ivar,
-                  ID2SYM(node->nd_vid), PUSH_VAL(DEFINED_IVAR));
+        ADD_INSN3(ret, line_node, defined_ivar,
+                  ID2SYM(node->nd_vid), get_ivar_ic_value(iseq,node->nd_vid), PUSH_VAL(DEFINED_IVAR));
         return;
 
       case NODE_GVAR:
