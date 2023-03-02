@@ -136,6 +136,9 @@ extern "C" {
     ) -> VALUE;
     pub fn rb_vm_ic_hit_p(ic: IC, reg_ep: *const VALUE) -> bool;
     pub fn rb_str_bytesize(str: VALUE) -> VALUE;
+
+    // TODO: Should be exposed via bindgen
+    pub fn rb_ivar_defined(obj: VALUE, id: ID) -> bool;
 }
 
 // Renames
